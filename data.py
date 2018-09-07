@@ -100,6 +100,7 @@ class HMData(Dataset):
         label,orig_label=getlabel(self.c1[i]['expr'],self.c2[i]['expr'])
         b_label_c1=orig_label[0]
         b_label_c2=orig_label[1]
+        assert self.c1[i]['geneID']==self.c2[i]['geneID']
         geneID=self.c1[i]['geneID']
         sample={'geneID':geneID,
                'X_A':final_data_c1,
