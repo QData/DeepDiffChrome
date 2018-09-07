@@ -33,11 +33,14 @@ We performed training and validation on the first 2 sets and then reported Pears
 Sample dataset has been provided inside "data/" folder. For two cell types "Cell1" and "Cell2" under consideration, the expression value is in Cell1.expr.csv and Cell2.expr.csv for all genes. The first column is geneID, and the second column is expression value. The train, valid and test set inputs are in Cell*.train.csv, Cell*.valid.csv, and Cell*.test.csv. The columns represent: geneID_window,HM1,HM2,HM3,HM4,HM5. 
 
 ## Training Model
-To train, validate and test the model for celltypes "Cell1" and "Cell2": \
+To train, validate and test the model for celltypes "Cell1" and "Cell2": 
+
 
 
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;python train.py --cell_1=Cell1 --cell_2=Cell2  --model_name=raw_d --epochs=120 --lr=0.0001 --data_root=data/ --save_root=Results/
+
+
 
 ### Other Options
 1. To specify DeepDiff variation: \
@@ -55,6 +58,9 @@ To train, validate and test the model for celltypes "Cell1" and "Cell2": \
 
 3. To change rnn size: \
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--bin_rnn_size=32 
+
+
+
 
 ### Testing
 To only test on a saved model: \
