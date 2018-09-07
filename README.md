@@ -34,6 +34,9 @@ Sample dataset has been provided inside "data/" folder. For two cell types "Cell
 
 ## Training Model
 To train, validate and test the model for celltypes "Cell1" and "Cell2": \
+
+
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;python train.py --cell_1=Cell1 --cell_2=Cell2  --model_name=raw_d --epochs=120 --lr=0.0001 --data_root=data/ --save_root=Results/
 
 ### Other Options
