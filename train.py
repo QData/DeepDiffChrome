@@ -333,17 +333,6 @@ if(args.test_on_saved_model==False):
                 # save best epoch -- models converge early
 		best_valid_R2=valid_R2
 		torch.save(model,model_dir+"/"+model_name+'_R2_model.pt')    
-		if(args.save_attention_maps):
-			attentionfile=open(attentionmapfile,'w')
-			attentionfilewriter=csv.writer(attentionfile)
-			beta_valid=beta_valid.numpy()
-			for i in range(len(gene_ids_valid)):
-				gene_attention=[]
-				gene_attention.append(gene_ids_valid[i])
-				for e in beta_valid[i,:]:
-					gene_attention.append(str(e))
-				attentionfilewriter.writerow(gene_attention)
-			attentionfile.close()
 			
 	    print("Epoch:",epoch)
 	    print("train R2:",train_R2)
@@ -360,9 +349,33 @@ if(args.test_on_saved_model==False):
         test_MSE, test_R2 = evaluate.compute_metrics(diff_predictions,diff_targets)
         print("test R2:",test_R2)
         
+	if(args.save_attention_maps):
+		attentionfile=open(attentionmapfile,'w')
+		attentionfilewriter=csv.writer(attentionfile)
+		beta_test=beta_test.numpy()
+		for i in range(len(gene_ids_test)):
+			gene_attention=[]
+			gene_attention.append(gene_ids_test[i])
+			for e in beta_test[i,:]:
+				gene_attention.append(str(e))
+			attentionfilewriter.writerow(gene_attention)
+		attentionfile.close()
+        
 
 else:
         model=torch.load(model_dir+"/"+model_name+'_R2_model.pt')
         diff_predictions,diff_targets,alpha_test,beta_test,test_loss,gene_ids_test = test(Test)
         test_MSE, test_R2 = evaluate.compute_metrics(diff_predictions,diff_targets) 
         print("test R2:",test_R2)
+        
+	if(args.save_attention_maps):
+		attentionfile=open(attentionmapfile,'w')
+		attentionfilewriter=csv.writer(attentionfile)
+		beta_test=beta_test.numpy()
+		for i in range(len(gene_ids_test)):
+			gene_attention=[]
+			gene_attention.append(gene_ids_test[i])
+			for e in beta_test[i,:]:
+				gene_attention.append(str(e))
+			attentionfilewriter.writerow(gene_attention)
+		attentionfile.close()

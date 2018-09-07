@@ -49,7 +49,6 @@ def loadData(filename,windows,gene_dict):
     nrows=len(data)
     ngenes=nrows/windows
     nfeatures=ncols-1
-    print(nfeatures)
     print("Number of genes: %d" % ngenes)
     print("Number of entries: %d" % nrows)
     print("Number of HMs: %d" % nfeatures)
@@ -114,17 +113,17 @@ def load_data(args):
     Loads data into a 3D tensor for each of the 3 splits.
     
     '''
+    print("==>loading train data")
     gene_dict1=loadDict(args.data_root+args.cell_1+".expr.csv")
     cell_train_dict1=loadData(args.data_root+"/"+args.cell_1+".train.csv",args.n_bins,gene_dict1) 
     gene_dict2=loadDict(args.data_root+args.cell_2+".expr.csv")
     cell_train_dict2=loadData(args.data_root+"/"+args.cell_2+".train.csv",args.n_bins,gene_dict2)
     train_inputs = HMData(cell_train_dict1,cell_train_dict2)
-
+    print("==>loading valid data") 
     cell_valid_dict1=loadData(args.data_root+"/"+args.cell_1+".valid.csv",args.n_bins,gene_dict1)
     cell_valid_dict2=loadData(args.data_root+"/"+args.cell_2+".valid.csv",args.n_bins,gene_dict2)
-
     valid_inputs = HMData(cell_valid_dict1,cell_valid_dict2)
-
+    print("==>loading test data")
     cell_test_dict1=loadData(args.data_root+"/"+args.cell_1+".test.csv",args.n_bins,gene_dict1)
     cell_test_dict2=loadData(args.data_root+"/"+args.cell_2+".test.csv",args.n_bins,gene_dict2)
     test_inputs = HMData(cell_test_dict1,cell_test_dict2)
