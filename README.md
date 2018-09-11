@@ -4,11 +4,17 @@
 gene expression from histone modifications](https://arxiv.org/abs/1807.03878)
 
 ```
-@article{sekhon2018deepdiff,
-  title={DeepDiff: Deep-learning for predicting Differential gene expression from histone modifications},
-  author={Sekhon, Arshdeep and Singh, Ritambhara and Qi, Yanjun},
-  journal={arXiv preprint arXiv:1807.03878},
-  year={2018}
+@article{ArDeepDiff18,
+author = {Sekhon, Arshdeep and Singh, Ritambhara and Qi, Yanjun},
+title = {DeepDiff: DEEP-learning for predicting DIFFerential gene expression from histone modifications},
+journal = {Bioinformatics},
+volume = {34},
+number = {17},
+pages = {i891-i900},
+year = {2018},
+doi = {10.1093/bioinformatics/bty612},
+URL = {http://dx.doi.org/10.1093/bioinformatics/bty612},
+eprint = {/oup/backfile/content_public/journal/bioinformatics/34/17/10.1093_bioinformatics_bty612/2/bty612.pdf}
 }
 ```
 ## Feature Generation
