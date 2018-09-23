@@ -1,7 +1,7 @@
 # DeepDiffChrome
 
 [DeepDiff: Deep-learning for predicting Differential
-gene expression from histone modifications](https://arxiv.org/abs/1807.03878)
+gene expression from histone modifications](https://academic.oup.com/bioinformatics/article/34/17/i891/5093224)
 
 ```
 @article{ArDeepDiff18,
