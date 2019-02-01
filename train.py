@@ -12,7 +12,6 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from torch import cuda
 import sys, os
-import progressbar
 import random
 import numpy as np
 from sklearn import metrics
