@@ -212,7 +212,7 @@ def train(TrainData):
 				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).cuda())
 
 		diff_predictions[start:end] = batch_diff_predictions.data.cpu()
-		per_epoch_loss += loss.data[0]
+		per_epoch_loss += loss.item()
 		loss.backward()
 		torch.nn.utils.clip_grad_norm(model.parameters(), args.clip)
 		optimizer.step()
@@ -307,7 +307,7 @@ def test(ValidData):
 				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).cuda())
 
 		diff_predictions[start:end] = batch_diff_predictions.data.cpu()
-		per_epoch_loss += loss.data[0]
+		per_epoch_loss += loss.item()
 	per_epoch_loss=per_epoch_loss/num_batches
 	return diff_predictions,diff_targets,all_attention_bin,all_attention_hm,per_epoch_loss,all_gene_ids
 
