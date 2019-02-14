@@ -1,5 +1,4 @@
 import argparse
-
 import json
 import matplotlib
 matplotlib.use('Agg')
@@ -9,7 +8,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from torch.autograd import Variable
 from torch import cuda
 import sys, os
 import random

@@ -9,7 +9,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from torch.autograd import Variable
 from torch import cuda
 import sys, os
 import random
@@ -47,7 +46,7 @@ args = parser.parse_args()
 
 torch.manual_seed(1)
 
-torch.cuda.manual_seed_all(1)
+
 
 model_name = ''
 model_name += (args.cell_1)+('_')+(args.cell_2)+('_')
@@ -84,38 +83,39 @@ CON=False
 AUX=False
 print('==>building model')
 if(args.model_name=='raw_d'):
-		model = Model.raw_d(args)
+	model = Model.raw_d(args)
 elif(args.model_name=='raw_c'):
-		model = Model.raw_c(args)
+	model = Model.raw_c(args)
 elif(args.model_name=='raw'):
-		model = Model.raw(args)
+	model = Model.raw(args)
 elif(args.model_name=='aux'):
-		args.shared=False
-		model = Model.aux(args)
-		AUX=True
-		args.gamma=0.0
+	args.shared=False
+	model = Model.aux(args)
+	AUX=True
+	args.gamma=0.0
 elif(args.model_name=='raw_aux'):
-		args.shared=False
-		model = Model.raw_aux(args)
-		AUX=True
-		args.gamma=0.0
+	args.shared=False
+	model = Model.raw_aux(args)
+	AUX=True
+	args.gamma=0.0
 elif(args.model_name=='aux_siamese'):
-		CON=True
-		args.shared=True
-		model = Model.aux_siamese(args)
-		AUX=True
-		args.gamma=4.0
+	CON=True
+	args.shared=True
+	model = Model.aux_siamese(args)
+	AUX=True
+	args.gamma=4.0
 elif(args.model_name=='raw_aux_siamese'):
-		CON=True
-		args.shared=True
-		model = Model.raw_aux_siamese(args)
-		AUX=True
-		args.gamma=4.0
+	CON=True
+	args.shared=True
+	model = Model.raw_aux_siamese(args)
+	AUX=True
+	args.gamma=4.0
 else:
-		sys.exit("invalid model name")
+	sys.exit("invalid model name")
 
 
 if torch.cuda.device_count() > 1:
+	torch.cuda.manual_seed_all(1)
 	dtype = torch.cuda.FloatTensor
 	cuda.set_device(args.gpuid)
 	model.type(dtype)
@@ -128,6 +128,7 @@ if(args.test_on_saved_model==False):
 	print("==>initializing a new model")
 	for p in model.parameters():
 		p.data.uniform_(-0.1,0.1)
+
 DiffLoss = nn.MSELoss(size_average=True).type(dtype)
 AuxLoss = nn.MSELoss(size_average=True).type(dtype)
 ConLoss = ContrastiveLoss().type(dtype)
@@ -136,7 +137,6 @@ optimizer = optim.Adam(model.parameters(), lr = args.lr)
 #optimizer = optim.SGD(model.parameters(), lr = args.lr, momentum=args.momentum)
 def train(TrainData):
 	model.train()
-	#print(model)
 	# initialize attention
 	diff_targets = torch.zeros(TrainData.dataset.__len__(),1)
 	diff_predictions = torch.zeros(diff_targets.size(0),1)
@@ -180,45 +180,45 @@ def train(TrainData):
 		diff_targets[start:end,0] = batch_diff_targets[:,0]
 
 		if(CON==True):
-				# get labels for contrastive loss
-				batch_contrastive_targets =[]
-				for label in batch_diff_targets:
-					if(label<=-2.0):
-						batch_contrastive_targets.append(1)
-					elif(label>=2.0):
-						batch_contrastive_targets.append(1)
-					else:
-						batch_contrastive_targets.append(0)
-				batch_contrastive_targets=torch.Tensor(batch_contrastive_targets)
+			# get labels for contrastive loss
+			batch_contrastive_targets =[]
+			for label in batch_diff_targets:
+				if(label<=-2.0):
+					batch_contrastive_targets.append(1)
+				elif(label>=2.0):
+					batch_contrastive_targets.append(1)
+				else:
+					batch_contrastive_targets.append(0)
+			batch_contrastive_targets=torch.Tensor(batch_contrastive_targets)
 
 
 		all_gene_ids[start:end]=Sample['geneID']
 		batch_size = inputs_1.size(0)
 
 		if(AUX==False):
-				# for raw models: raw_d, raw_c, raw
-				batch_diff_predictions,batch_beta,batch_alpha = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
-				all_attention_bin[start:end]=batch_alpha.data
-				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
+			# for raw models: raw_d, raw_c, raw
+			batch_diff_predictions,batch_beta,batch_alpha = model(inputs_1.type(dtype),inputs_2.type(dtype))
+			all_attention_bin[start:end]=batch_alpha.data
+			all_attention_hm[start:end]=batch_beta.data
+			loss = DiffLoss(batch_diff_predictions,batch_diff_targets.type(dtype))
 		elif(CON==False):
-				# for aux models
-				batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
-				all_attention_bin[start:end]=batch_alpha.data
-				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
+			# for aux models
+			batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(inputs_1.type(dtype),inputs_2.type(dtype))
+			all_attention_bin[start:end]=batch_alpha.data
+			all_attention_hm[start:end]=batch_beta.data
+			loss = DiffLoss(batch_diff_predictions,batch_diff_targets.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c1,batch_diff_targets_c1.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c2,batch_diff_targets_c2.type(dtype))
 		else:
-				# for aux and siamese models
-				batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
+			# for aux and siamese models
+			batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(inputs_1.type(dtype),inputs_2.type(dtype))
 
-				all_attention_bin[start:end]=batch_alpha.data
-				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
-				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).type(dtype))
+			all_attention_bin[start:end]=batch_alpha.data
+			all_attention_hm[start:end]=batch_beta.data
+			loss = DiffLoss(batch_diff_predictions,batch_diff_targets.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c1,batch_diff_targets_c1.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c2,batch_diff_targets_c2.type(dtype))
+			loss+=args.gamma*ConLoss(embedding_1,embedding_2,batch_contrastive_targets.type(dtype))
 
 		diff_predictions[start:end] = batch_diff_predictions.data.cpu()
 		per_epoch_loss += loss.item()
@@ -244,15 +244,12 @@ def test(ValidData):
 	elif(args.model_name=='raw'):
 		all_attention_bin=torch.zeros(ValidData.dataset.__len__(),(3*args.n_hms*args.n_bins))
 		all_attention_hm=torch.zeros(ValidData.dataset.__len__(),3*args.n_hms)
-
 	elif(args.model_name=='aux' or args.model_name=='aux_siamese'):
 		all_attention_bin=torch.zeros(ValidData.dataset.__len__(),(2*args.n_hms*args.n_bins))
 		all_attention_hm=torch.zeros(ValidData.dataset.__len__(),2*args.n_hms)
-
 	elif(args.model_name=='raw_aux' or args.model_name=='raw_aux_siamese'):
 		all_attention_bin=torch.zeros(ValidData.dataset.__len__(),(3*args.n_hms*args.n_bins))
 		all_attention_hm=torch.zeros(ValidData.dataset.__len__(),5*args.n_hms)
-
 	else:
 		all_attention_bin=torch.zeros(ValidData.dataset.__len__(),(args.n_hms*args.n_bins))
 		all_attention_hm=torch.zeros(ValidData.dataset.__len__(),args.n_hms)
@@ -275,45 +272,45 @@ def test(ValidData):
 		diff_targets[start:end,0] = batch_diff_targets[:,0]
 
 		if(CON==True):
-				# get labels for contrastive loss
-				batch_contrastive_targets =[]
-				for label in batch_diff_targets:
-					if(label<=-2.0):
-						batch_contrastive_targets.append(1)
-					elif(label>=2.0):
-						batch_contrastive_targets.append(1)
-					else:
-						batch_contrastive_targets.append(0)
-				batch_contrastive_targets=torch.Tensor(batch_contrastive_targets)
+			# get labels for contrastive loss
+			batch_contrastive_targets =[]
+			for label in batch_diff_targets:
+				if(label<=-2.0):
+					batch_contrastive_targets.append(1)
+				elif(label>=2.0):
+					batch_contrastive_targets.append(1)
+				else:
+					batch_contrastive_targets.append(0)
+			batch_contrastive_targets=torch.Tensor(batch_contrastive_targets)
 
 
 		all_gene_ids[start:end]=Sample['geneID']
 		batch_size = inputs_1.size(0)
 
 		if(AUX==False):
-				# for raw models: raw_d, raw_c, raw
-				batch_diff_predictions,batch_beta,batch_alpha = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
-				all_attention_bin[start:end]=batch_alpha.data
-				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
+			# for raw models: raw_d, raw_c, raw
+			batch_diff_predictions,batch_beta,batch_alpha = model(inputs_1.type(dtype),inputs_2.type(dtype))
+			all_attention_bin[start:end]=batch_alpha.data
+			all_attention_hm[start:end]=batch_beta.data
+			loss = DiffLoss(batch_diff_predictions,batch_diff_targets.type(dtype))
 		elif(CON==False):
-				# for aux models
-				batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
-				all_attention_bin[start:end]=batch_alpha.data
-				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
+			# for aux models
+			batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(inputs_1.type(dtype),inputs_2.type(dtype))
+			all_attention_bin[start:end]=batch_alpha.data
+			all_attention_hm[start:end]=batch_beta.data
+			loss = DiffLoss(batch_diff_predictions,batch_diff_targets.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c1,batch_diff_targets_c1.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c2,batch_diff_targets_c2.type(dtype))
 		else:
-				# for aux and siamese models
-				batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
+			# for aux and siamese models
+			batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(inputs_1.type(dtype),inputs_2.type(dtype))
 
-				all_attention_bin[start:end]=batch_alpha.data
-				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
-				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).type(dtype))
+			all_attention_bin[start:end]=batch_alpha.data
+			all_attention_hm[start:end]=batch_beta.data
+			loss = DiffLoss(batch_diff_predictions,batch_diff_targets.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c1,batch_diff_targets_c1.type(dtype))
+			loss+=AuxLoss(batch_diff_predictions_c2,batch_diff_targets_c2.type(dtype))
+			loss+=args.gamma*ConLoss(embedding_1,embedding_2,batch_contrastive_targets.type(dtype))
 
 		diff_predictions[start:end] = batch_diff_predictions.data.cpu()
 		per_epoch_loss += loss.item()
