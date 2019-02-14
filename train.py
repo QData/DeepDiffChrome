@@ -74,7 +74,12 @@ attentionmapfile=model_dir+'/'+args.attentionfilename
 print('==>processing data')
 Train,Valid,Test = data.load_data(args)
 
-cuda.set_device(args.gpuid)
+
+
+
+
+
+
 CON=False
 AUX=False
 print('==>building model')
@@ -110,18 +115,22 @@ else:
 		sys.exit("invalid model name")
 
 
+if torch.cuda.device_count() > 1:
+	dtype = torch.cuda.FloatTensor
+	cuda.set_device(args.gpuid)
+	model.type(dtype)
+	print('Using GPU '+str(args.gpuid))
+else:
+	dtype = torch.FloatTensor
 
-
-   
-model.cuda()
 print(model)
 if(args.test_on_saved_model==False):
-		print("==>initializing a new model")
-		for p in model.parameters():
-						p.data.uniform_(-0.1,0.1)
-DiffLoss = nn.MSELoss(size_average=True).cuda()
-AuxLoss = nn.MSELoss(size_average=True).cuda()
-ConLoss = ContrastiveLoss().cuda()
+	print("==>initializing a new model")
+	for p in model.parameters():
+		p.data.uniform_(-0.1,0.1)
+DiffLoss = nn.MSELoss(size_average=True).type(dtype)
+AuxLoss = nn.MSELoss(size_average=True).type(dtype)
+ConLoss = ContrastiveLoss().type(dtype)
 
 optimizer = optim.Adam(model.parameters(), lr = args.lr)
 #optimizer = optim.SGD(model.parameters(), lr = args.lr, momentum=args.momentum)
@@ -188,28 +197,28 @@ def train(TrainData):
 
 		if(AUX==False):
 				# for raw models: raw_d, raw_c, raw
-				batch_diff_predictions,batch_beta,batch_alpha = model(Variable(inputs_1).cuda(),Variable(inputs_2).cuda())
+				batch_diff_predictions,batch_beta,batch_alpha = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
 				all_attention_bin[start:end]=batch_alpha.data
 				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).cuda())
+				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
 		elif(CON==False):
 				# for aux models
-				batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).cuda(),Variable(inputs_2).cuda())
+				batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
 				all_attention_bin[start:end]=batch_alpha.data
 				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).cuda())
+				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
 		else:
 				# for aux and siamese models
-				batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).cuda(),Variable(inputs_2).cuda())
+				batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
 
 				all_attention_bin[start:end]=batch_alpha.data
 				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).cuda())
-				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).cuda())
+				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
+				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).type(dtype))
 
 		diff_predictions[start:end] = batch_diff_predictions.data.cpu()
 		per_epoch_loss += loss.item()
@@ -283,28 +292,28 @@ def test(ValidData):
 
 		if(AUX==False):
 				# for raw models: raw_d, raw_c, raw
-				batch_diff_predictions,batch_beta,batch_alpha = model(Variable(inputs_1).cuda(),Variable(inputs_2).cuda())
+				batch_diff_predictions,batch_beta,batch_alpha = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
 				all_attention_bin[start:end]=batch_alpha.data
 				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).cuda())
+				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
 		elif(CON==False):
 				# for aux models
-				batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).cuda(),Variable(inputs_2).cuda())
+				batch_diff_predictions,batch_beta,batch_alpha,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
 				all_attention_bin[start:end]=batch_alpha.data
 				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).cuda())
+				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
 		else:
 				# for aux and siamese models
-				batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).cuda(),Variable(inputs_2).cuda())
+				batch_diff_predictions,batch_beta,batch_alpha,embedding_1,embedding_2,batch_diff_predictions_c1,batch_diff_predictions_c2 = model(Variable(inputs_1).type(dtype),Variable(inputs_2).type(dtype))
 
 				all_attention_bin[start:end]=batch_alpha.data
 				all_attention_hm[start:end]=batch_beta.data
-				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).cuda())
-				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).cuda())
-				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).cuda())
+				loss = DiffLoss(batch_diff_predictions,Variable(batch_diff_targets, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c1,Variable(batch_diff_targets_c1, volatile=False).type(dtype))
+				loss+=AuxLoss(batch_diff_predictions_c2,Variable(batch_diff_targets_c2, volatile=False).type(dtype))
+				loss+=args.gamma*ConLoss(embedding_1,embedding_2,Variable(batch_contrastive_targets, volatile=False).type(dtype))
 
 		diff_predictions[start:end] = batch_diff_predictions.data.cpu()
 		per_epoch_loss += loss.item()
