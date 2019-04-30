@@ -72,3 +72,10 @@ To train, validate and test the model for celltypes "Cell1" and "Cell2":
 To only test on a saved model: \
 python train.py --test_on_saved_model --model_name=raw_d --data_root=data/ --save_root=Results/  
 
+
+
+#### DeepDiffChrome is adapted from our previous work AttentiveChrome: 
+
+[https://github.com/QData/AttentiveChrome](https://github.com/QData/AttentiveChrome)
+
+AttentiveChrome is a unified architecture to model and to interpret dependencies among chromatin factors for controlling gene regulation. AttentiveChrome uses a hierarchy of multiple Long short-term memory (LSTM) modules to encode the input signals and to model how various chromatin marks cooperate automatically. AttentiveChrome trains two levels of attention jointly with the target prediction, enabling it to attend differentially to relevant marks and to locate important positions per mark. We evaluate the model across 56 different cell types (tasks) in human. Not only is the proposed architecture more accurate, but its attention scores also provide a better interpretation than state-of-the-art feature visualization methods such as saliency map.
