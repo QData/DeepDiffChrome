@@ -74,7 +74,7 @@ python train.py --test_on_saved_model --model_name=raw_d --data_root=data/ --sav
 
 
 
-#### DeepDiffChrome is adapted from our previous work AttentiveChrome: 
+#### DeepDiffChrome was adapted from our previous work AttentiveChrome: 
 
 [https://github.com/QData/AttentiveChrome](https://github.com/QData/AttentiveChrome)
 
