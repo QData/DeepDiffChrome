@@ -19,7 +19,7 @@ eprint = {/oup/backfile/content_public/journal/bioinformatics/34/17/10.1093_bioi
 ```
 ## Feature Generation
 
-We used the five core histone modification (listed in the paper) read counts from REMC database as input matrix. We downloaded the files from REMC database. We converted 'tagalign.gz' format to 'bam' by using the command:   
+We used the five core histone modification (listed in the paper) read counts from REMC database as input matrix. We downloaded the we used processed data files from [REMC database](https://egg2.wustl.edu/roadmap/web_portal/processed_data.html#ChipSeq_DNaseSeq) and used [bedtools](https://bedtools.readthedocs.io/en/latest/) to put it in the format that has been shared. We converted 'tagalign.gz' format to 'bam' by using the command:   
 
 
 
@@ -36,7 +36,7 @@ We divided the genes into 3 separate sets for training(10,000 genes), validation
 
 We performed training and validation on the first 2 sets and then reported Pearson Correlation Coefficient(PCC) scores of best performing epoch model for the third test data set. 
 
-Sample dataset has been provided inside "data/" folder. For two cell types "Cell1" and "Cell2" under consideration, the expression value is in Cell1.expr.csv and Cell2.expr.csv for all genes. The first column is geneID, and the second column is expression value. The train, valid and test set inputs are in Cell*.train.csv, Cell*.valid.csv, and Cell*.test.csv. The columns represent: geneID_window,HM1,HM2,HM3,HM4,HM5. 
+Sample dataset has been provided inside "data/" folder. For two cell types "Cell1" and "Cell2" under consideration, the expression value is in Cell1.expr.csv and Cell2.expr.csv for all genes. The first column is geneID, and the second column is expression value. The train, valid and test set inputs are in Cell*.train.csv, Cell*.valid.csv, and Cell*.test.csv. The columns represent: geneID_window,H3K4me1 count,H3K4me3 count,H3K9me3 count,H3K27me3 count,H3K36me3 count. 
 
 ## Training Model
 To train, validate and test the model for celltypes "Cell1" and "Cell2": 
