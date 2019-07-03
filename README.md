@@ -36,7 +36,7 @@ We divided the genes into 3 separate sets for training(10,000 genes), validation
 
 We performed training and validation on the first 2 sets and then reported Pearson Correlation Coefficient(PCC) scores of best performing epoch model for the third test data set. 
 
-Sample dataset has been provided inside "data/" folder. For two cell types "Cell1" and "Cell2" under consideration, the expression value is in Cell1.expr.csv and Cell2.expr.csv for all genes. The first column is geneID, and the second column is expression value. The train, valid and test set inputs are in Cell*.train.csv, Cell*.valid.csv, and Cell*.test.csv. The columns represent: geneID_window,H3K4me1 count,H3K4me3 count,H3K9me3 count,H3K27me3 count,H3K36me3 count. 
+Sample dataset has been provided inside "data/" folder and all datasets used in DeepDiffChrome are provided in "data/ProcessedData". For two cell types "Cell1" and "Cell2" under consideration, the expression value is in Cell1.expr.csv and Cell2.expr.csv for all genes. The first column is geneID, and the second column is expression value. The train, valid and test set inputs are in Cell*.train.csv, Cell*.valid.csv, and Cell*.test.csv. The columns represent: geneID_window,H3K4me1 count,H3K4me3 count,H3K9me3 count,H3K27me3 count,H3K36me3 count. 
 
 ## Training Model
 To train, validate and test the model for celltypes "Cell1" and "Cell2": 
