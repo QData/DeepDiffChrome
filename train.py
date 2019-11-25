@@ -114,7 +114,7 @@ else:
 	sys.exit("invalid model name")
 
 
-if torch.cuda.device_count() > 1:
+if torch.cuda.device_count() >= 1:
 	torch.cuda.manual_seed_all(1)
 	dtype = torch.cuda.FloatTensor
 	cuda.set_device(args.gpuid)
